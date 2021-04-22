@@ -7,11 +7,23 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+var c tConfig
+
+func init() {
+
+	var errCfg error
+
+	c, errCfg = loadCfg("./config/config.json")
+	if errCfg != nil {
+		log.Fatal(errCfg)
+	}
+}
+
 func main() {
 
-	bot, err := tgbotapi.NewBotAPI("token")
-	if err != nil {
-		log.Panic(err)
+	bot, errBot := tgbotapi.NewBotAPI(c.Token)
+	if errBot != nil {
+		log.Fatal(errBot)
 	}
 
 	bot.Debug = true
@@ -21,7 +33,10 @@ func main() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	updates, errUpd := bot.GetUpdatesChan(u)
+	if errUpd != nil {
+		log.Print(errUpd)
+	}
 
 	time.Sleep(time.Millisecond * 500)
 	updates.Clear()
