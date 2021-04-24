@@ -1,3 +1,12 @@
 {
- "tg_token": "token"
+ "tg_token": "token",
+ "weather_api_url": "https://api.openweathermap.org",
+ "api_key": "key",
+ "location": "Moscow",
+ "coordinates": {
+   "lon": 37.62,
+   "lat": 55.75
+  },
+ "measurement_units": "metric",
+ "language": "en"
 }
