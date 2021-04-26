@@ -11,7 +11,11 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var c tConfig
+var (
+	c   tConfig
+	w   tWeather
+	err error
+)
 
 func init() {
 
@@ -64,7 +68,15 @@ func main() {
 					"\n/units - set measurement units",
 					"\n/lang - set language")
 			case "weather":
-				msg.Text = "Loading weather data..."
+				url := fmt.Sprintf("%s/data/2.5/weather?q=%s&units=%s&lang=%s&appid=%s",
+					c.ApiURL, c.City, c.Units, c.Lang, c.ApiKEY)
+				w, err = downloadWeatherData(url, c)
+				if err != nil {
+					msg.Text = fmt.Sprintf("Error! %s", err.Error())
+				} else {
+					msg.Text = fmt.Sprintf("Selected region: %s\nTemperature: %+.1f\nMinimum: %+.1f\nMaximum: %+.1f",
+						w.Name, w.Main.Temp, w.Main.TempMin, w.Main.TempMax)
+				}
 			case "city":
 				c.City = update.Message.CommandArguments()
 			case "coordinates":
