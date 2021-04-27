@@ -1,20 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var (
-	c   tConfig
-	w   tWeather
-	err error
+	c      tConfig
+	w      tWeather
+	err    error
+	byCity bool
 )
 
 func init() {
@@ -25,6 +23,8 @@ func init() {
 	if errCfg != nil {
 		log.Fatal(errCfg)
 	}
+
+	byCity = true
 }
 
 func main() {
@@ -57,42 +57,22 @@ func main() {
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
-
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "help":
-				msg.Text = fmt.Sprint("Available commands:",
-					"\n/weather - show current weather",
-					"\n/city - set name of the city",
-					"\n/coordinates - set coordinates",
-					"\n/units - set measurement units",
-					"\n/lang - set language")
+				msg.Text = printHelp()
 			case "weather":
-				url := fmt.Sprintf("%s/data/2.5/weather?q=%s&units=%s&lang=%s&appid=%s",
-					c.ApiURL, c.City, c.Units, c.Lang, c.ApiKEY)
-				w, err = downloadWeatherData(url, c)
-				if err != nil {
-					msg.Text = fmt.Sprintf("Error! %s", err.Error())
-				} else {
-					msg.Text = fmt.Sprintf("Selected region: %s\nTemperature: %+.1f\nMinimum: %+.1f\nMaximum: %+.1f",
-						w.Name, w.Main.Temp, w.Main.TempMin, w.Main.TempMax)
-				}
+				w, err = getWeather(c, byCity)
+				msg.Text = printWeather(c, w, err)
 			case "city":
 				c.City = update.Message.CommandArguments()
+				byCity = true
 			case "coordinates":
-				s := update.Message.CommandArguments()
-				args := strings.Split(s, ", ")
-				if len(args) == 2 {
-					c.Coord.Lon, _ = strconv.ParseFloat(args[0], 64)
-					c.Coord.Lat, _ = strconv.ParseFloat(args[1], 64)
-				}
-				msg.Text = fmt.Sprintf("Lon %f, Lat %f", c.Coord.Lon, c.Coord.Lat)
+				c, byCity, msg.Text = setCoordinates(c, update.Message.CommandArguments())
 			case "units":
-				c.Units = update.Message.CommandArguments()
-				msg.Text = fmt.Sprintf("Units = %s", c.Units)
+				c, w, msg.Text = setConvUnits(c, w, update.Message.CommandArguments())
 			case "lang":
 				c.Lang = update.Message.CommandArguments()
-				msg.Text = fmt.Sprintf("Lang = %s", c.Lang)
 			case "exit":
 				log.Println("Exit")
 				os.Exit(1)

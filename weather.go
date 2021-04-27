@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -31,6 +32,11 @@ func downloadWeatherData(url string, c tConfig) (tWeather, error) {
 	if errDec != nil {
 		log.Println(errDec)
 		return w, errors.New("Unable to decode response")
+	}
+
+	//if location doesn't have city name
+	if w.Name == "" {
+		w.Name = fmt.Sprintf("%.2f, %.2f", c.Coord.Lon, c.Coord.Lat)
 	}
 
 	return w, nil
