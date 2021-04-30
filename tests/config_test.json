@@ -1,0 +1,12 @@
+{
+ "tg_token": "Token",
+ "weather_api_url": "https://api.openweathermap.org",
+ "api_key": "Key",
+ "location": "Tokyo",
+ "coordinates": {
+   "lon": 27.42,
+   "lat": -19.57
+  },
+ "measurement_units": "metric",
+ "language": "fr"
+}
