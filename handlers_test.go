@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -74,5 +75,89 @@ func TestPrintWeather(t *testing.T) {
 	got = printWeather(c, w, err)
 	if got != expd {
 		t.Error("Expected:", expd, "got:", got)
+	}
+}
+
+// Tests setCoordinates func
+func TestSetCoordinates(t *testing.T) {
+
+	var (
+		c, gotC, expdC        tConfig
+		args, expdMsg, gotMsg string
+		expdCity, gotCity     bool
+	)
+
+	// testing correct coordinates
+	args = "17.62, 37.79"
+	expdC.Coord.Lon = 17.62
+	expdC.Coord.Lat = 37.79
+	expdCity = false
+	expdMsg = "Installed coordinates:\nLongitude: 17.62\nLatitude: 37.79"
+
+	gotC, gotCity, gotMsg = setCoordinates(c, args)
+	if gotC != expdC || gotCity != expdCity || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, gotCity, expdMsg, "got:", gotC, gotCity, gotMsg)
+	}
+
+	// testing incorrect coordinates
+	args = "-12.67, 192.32"
+	expdC.Coord.Lon = 0.0
+	expdC.Coord.Lat = 0.0
+	expdCity = true
+	expdMsg = "Incorrect latitude!"
+
+	gotC, gotCity, gotMsg = setCoordinates(c, args)
+	if gotC != expdC || gotCity != expdCity || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, gotCity, expdMsg, "got:", gotC, gotCity, gotMsg)
+	}
+}
+
+// Tests setConvUnits func
+func TestSetConvUnits(t *testing.T) {
+
+	var (
+		c, gotC, expdC     tConfig
+		w, gotW, expdW     tWeather
+		s, expdMsg, gotMsg string
+	)
+
+	// testing metric to imperial conv
+	c.Units = "metric"
+	w.Main.Temp = 7.7
+	s = "imperial"
+	expdW.Main.Temp = 45.9
+	expdC.Units = "imperial"
+	expdMsg = "Installed imperial measurement units"
+
+	gotC, gotW, gotMsg = setConvUnits(c, w, s)
+	if gotC != expdC || fmt.Sprintf("%+.1f", gotW.Main.Temp) != fmt.Sprintf("%+.1f", expdW.Main.Temp) || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, fmt.Sprintf("%+.1f", expdW.Main.Temp), expdMsg,
+			"got:", gotC, fmt.Sprintf("%+.1f", gotW.Main.Temp), gotMsg)
+	}
+
+	// testing imperial to metric convertation
+	c.Units = "imperial"
+	w.Main.Temp = 45.9
+	s = "metric"
+	expdW.Main.Temp = 7.7
+	expdC.Units = "metric"
+	expdMsg = "Installed metric measurement units"
+
+	gotC, gotW, gotMsg = setConvUnits(c, w, s)
+	if gotC != expdC || fmt.Sprintf("%+.1f", gotW.Main.Temp) != fmt.Sprintf("%+.1f", expdW.Main.Temp) || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, fmt.Sprintf("%+.1f", expdW.Main.Temp), expdMsg,
+			"got:", gotC, fmt.Sprintf("%+.1f", gotW.Main.Temp), gotMsg)
+	}
+
+	// testing incorrect argument
+	s = "hello world"
+	expdW.Main.Temp = w.Main.Temp
+	expdC.Units = c.Units
+	expdMsg = "Wrong arguments. Must be [metric] or [imperial]"
+
+	gotC, gotW, gotMsg = setConvUnits(c, w, s)
+	if gotC != expdC || fmt.Sprintf("%+.1f", gotW.Main.Temp) != fmt.Sprintf("%+.1f", expdW.Main.Temp) || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, fmt.Sprintf("%+.1f", expdW.Main.Temp), expdMsg,
+			"got:", gotC, fmt.Sprintf("%+.1f", gotW.Main.Temp), gotMsg)
 	}
 }
