@@ -87,7 +87,7 @@ func TestSetCoordinates(t *testing.T) {
 		expdCity, gotCity     bool
 	)
 
-	// testing correct coordinates
+	// testing correct coordinates #1
 	args = "17.62, 37.79"
 	expdC.Coord.Lon = 17.62
 	expdC.Coord.Lat = 37.79
@@ -99,8 +99,56 @@ func TestSetCoordinates(t *testing.T) {
 		t.Error("Expected:", expdC, gotCity, expdMsg, "got:", gotC, gotCity, gotMsg)
 	}
 
-	// testing incorrect coordinates
+	// testing correct coordinates #2
+	args = "179.96, -89.72"
+	expdC.Coord.Lon = 179.96
+	expdC.Coord.Lat = -89.72
+	expdCity = false
+	expdMsg = "Installed coordinates:\nLongitude: 179.96\nLatitude: -89.72"
+
+	gotC, gotCity, gotMsg = setCoordinates(c, args)
+	if gotC != expdC || gotCity != expdCity || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, gotCity, expdMsg, "got:", gotC, gotCity, gotMsg)
+	}
+
+	// testing incorrect coordinates #1
+	args = "-310.79, -32.17"
+	expdC.Coord.Lon = 0.0
+	expdC.Coord.Lat = 0.0
+	expdCity = true
+	expdMsg = "Incorrect longitude!"
+
+	gotC, gotCity, gotMsg = setCoordinates(c, args)
+	if gotC != expdC || gotCity != expdCity || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, gotCity, expdMsg, "got:", gotC, gotCity, gotMsg)
+	}
+
+	// testing incorrect coordinates #2
+	args = "hw, -82.27"
+	expdC.Coord.Lon = 0.0
+	expdC.Coord.Lat = 0.0
+	expdCity = true
+	expdMsg = "Incorrect longitude!"
+
+	gotC, gotCity, gotMsg = setCoordinates(c, args)
+	if gotC != expdC || gotCity != expdCity || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, gotCity, expdMsg, "got:", gotC, gotCity, gotMsg)
+	}
+
+	// testing incorrect coordinates #3
 	args = "-12.67, 192.32"
+	expdC.Coord.Lon = 0.0
+	expdC.Coord.Lat = 0.0
+	expdCity = true
+	expdMsg = "Incorrect latitude!"
+
+	gotC, gotCity, gotMsg = setCoordinates(c, args)
+	if gotC != expdC || gotCity != expdCity || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, gotCity, expdMsg, "got:", gotC, gotCity, gotMsg)
+	}
+
+	// testing incorrect coordinates #4
+	args = "-79.12, qwerty"
 	expdC.Coord.Lon = 0.0
 	expdC.Coord.Lat = 0.0
 	expdCity = true
@@ -121,7 +169,7 @@ func TestSetConvUnits(t *testing.T) {
 		s, expdMsg, gotMsg string
 	)
 
-	// testing metric to imperial conv
+	// testing metric to imperial convertation
 	c.Units = "metric"
 	w.Main.Temp = 7.7
 	s = "imperial"
@@ -149,8 +197,20 @@ func TestSetConvUnits(t *testing.T) {
 			"got:", gotC, fmt.Sprintf("%+.1f", gotW.Main.Temp), gotMsg)
 	}
 
-	// testing incorrect argument
+	// testing incorrect argument #1
 	s = "hello world"
+	expdW.Main.Temp = w.Main.Temp
+	expdC.Units = c.Units
+	expdMsg = "Wrong arguments. Must be [metric] or [imperial]"
+
+	gotC, gotW, gotMsg = setConvUnits(c, w, s)
+	if gotC != expdC || fmt.Sprintf("%+.1f", gotW.Main.Temp) != fmt.Sprintf("%+.1f", expdW.Main.Temp) || gotMsg != expdMsg {
+		t.Error("Expected:", expdC, fmt.Sprintf("%+.1f", expdW.Main.Temp), expdMsg,
+			"got:", gotC, fmt.Sprintf("%+.1f", gotW.Main.Temp), gotMsg)
+	}
+
+	// testing incorrect argument #2
+	s = ""
 	expdW.Main.Temp = w.Main.Temp
 	expdC.Units = c.Units
 	expdMsg = "Wrong arguments. Must be [metric] or [imperial]"
